@@ -1,0 +1,17 @@
+[project]
+name = "browser-tools"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "asgi-correlation-id>=4.3.4",
+    "colorlog>=6.9.0",
+    "fastapi[standard]>=0.118.0",
+    "html2image>=2.0.7",
+    "py-zerox>=0.0.7",
+    "pypdfium2>=4.30.0",
+    "python-json-logger>=4.0.0",
+    "requests>=2.32.5",
+    "uvicorn>=0.37.0",
+]

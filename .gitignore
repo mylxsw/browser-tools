@@ -1,8 +1,12 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
 build/
-config.local.yaml
-coins-table.local.yaml
-Makefile.local
-.vscode/
-.idea/
-*.log
-.DS_Store
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+temp/
+.claude/

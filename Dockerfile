@@ -9,7 +9,8 @@ RUN apt-get update -y && \
     chromium \
     graphicsmagick \
     poppler-utils \
-    curl && \
+    curl \
+    fonts-wqy-zenhei && \
     rm -rf /var/lib/apt/lists/* && \
     echo 'export CHROMIUM_FLAGS="$CHROMIUM_FLAGS --no-sandbox"' >> /etc/chromium.d/default-flags
 

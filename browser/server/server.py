@@ -32,7 +32,7 @@ class BrowserServer:
         self,
         temp_path: str,
         zerox_model: str = "gpt-4o-mini",
-        browser_size: tuple[int, int] = (1024, 1024),
+        browser_size: tuple[int, int] = (1080, 1920),
     ):
         self._temp_path = temp_path
         self._zerox_model = zerox_model
@@ -41,7 +41,7 @@ class BrowserServer:
             output_path=temp_path,
             disable_logging=True,
             temp_path=temp_path,
-            custom_flags=["--timeout=10000"],
+            custom_flags=["--timeout=10000", "--hide-scrollbars"],
         )
 
     def clean_before(self, before_date: datetime):
@@ -56,22 +56,24 @@ class BrowserServer:
                 logging.info(f"cleaning up temporary file: remove {file_to_delete}")
                 os.remove(file_to_delete)
 
-    def html_to_image(self, html_or_url: str) -> list[str]:
+    def html_to_image(self, html_or_url: str, size: tuple[int, int] = (1080, 1920)) -> list[str]:
         """
         Convert HTML or URL to image
         :param html_or_url: HTML string or URL
+        :param size: Size of the browser window
         :return: list of image paths
         """
         try:
             filename = self._generate_filename(html_or_url, "png", absolute=False)
 
             if html_or_url.startswith(("http://", "https://")):
-                return self._html.screenshot(url=html_or_url, save_as=filename)
+                return self._html.screenshot(url=html_or_url, save_as=filename, size=size)
             else:
                 return self._html.screenshot(
                     html_str=html_or_url,
                     save_as=filename,
                     css_str="body { background: white; }",
+                    size=size,
                 )
         except Exception as e:
             logging.warning(f"Error in html_to_image: {e}")

@@ -119,8 +119,15 @@ def route(server: BrowserServer) -> APIRouter:
     )
     def html_to_image(
         html_or_url: Annotated[str, Form(description="The HTML content or URL")],
+        size: Annotated[
+            str | None,
+            Form(
+                description="The size of the browser window, format: WIDTHxHEIGHT, e.g. 1080x1920",
+                regex=r"^\d+x\d+$",
+            ),
+        ] = "1080x1920",
     ):
-        images = server.html_to_image(html_or_url=html_or_url)
+        images = server.html_to_image(html_or_url=html_or_url, size=size.split("x"))
         if len(images) == 0:
             raise BusinessError("No image generated")
 

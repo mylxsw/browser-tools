@@ -6,8 +6,8 @@ WORKDIR /app
 # Install system dependencies
 RUN apt-get update -y && \
     apt-get install -y --no-install-recommends \
-    chromium \
     graphicsmagick \
+    chromium \
     poppler-utils \
     curl \
     fonts-wqy-zenhei && \
@@ -18,6 +18,8 @@ RUN apt-get update -y && \
 COPY pyproject.toml uv.lock ./
 
 # Install dependencies (this will recreate the venv in the container)
+# Increase timeout for slow connections when downloading large packages
+ENV UV_HTTP_TIMEOUT=300
 RUN rm -rf .venv && uv sync --frozen --no-dev
 
 # Copy application code
@@ -27,5 +29,5 @@ COPY browser/ ./browser/
 # Set PATH to use virtual environment and ensure it's activated
 ENV PATH="/app/.venv/bin:$PATH"
 
-EXPOSE 8001
+EXPOSE 8000
 CMD ["python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]

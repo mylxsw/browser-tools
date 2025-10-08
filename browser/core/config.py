@@ -37,3 +37,8 @@ class Config:
     @property
     def temp_path(self) -> str:
         return os.getenv("BROWSER_TOOLS_TEMP_PATH", "/tmp/browser-tools").rstrip("/")
+
+    @property
+    def page_timeout(self) -> int:
+        """Page navigation timeout in milliseconds"""
+        return int(os.getenv("BROWSER_TOOLS_PAGE_TIMEOUT", "60000"))

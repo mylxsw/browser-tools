@@ -1,14 +1,16 @@
 import dataclasses
 import logging
 import os
+import subprocess
+import sys
 import uuid
 from datetime import datetime
 
 import requests
 import tempfile
-from html2image import Html2Image
 import pypdfium2 as pdfium
 from pyzerox import zerox
+from playwright.async_api import async_playwright
 
 from browser.util.error import BusinessError
 
@@ -33,16 +35,22 @@ class BrowserServer:
         temp_path: str,
         zerox_model: str = "gpt-4o-mini",
         browser_size: tuple[int, int] = (1080, 1920),
+        page_timeout: int = 60000,
     ):
         self._temp_path = temp_path
         self._zerox_model = zerox_model
-        self._html = Html2Image(
-            size=browser_size,
-            output_path=temp_path,
-            disable_logging=True,
-            temp_path=temp_path,
-            custom_flags=["--timeout=10000", "--hide-scrollbars"],
-        )
+        self._browser_size = browser_size
+        self._page_timeout = page_timeout
+
+        # check if playwright browsers are installed
+        try:
+            print("Installing Playwright browsers...")
+            subprocess.run([sys.executable, "-m", "playwright", "install", "--with-deps"], check=True)
+            print("Playwright browsers installed successfully.")
+        except (subprocess.CalledProcessError, FileNotFoundError):
+            print(
+                "Could not install Playwright browsers. Please run 'playwright install --with-deps' manually."
+            )
 
     def clean_before(self, before_date: datetime):
         """
@@ -56,28 +64,39 @@ class BrowserServer:
                 logging.info(f"cleaning up temporary file: remove {file_to_delete}")
                 os.remove(file_to_delete)
 
-    def html_to_image(self, html_or_url: str, size: tuple[int, int] = (1080, 1920)) -> list[str]:
+    async def html_to_image(
+        self,
+        html_or_url: str,
+        size: tuple[int, int] | None = None,
+    ) -> list[str]:
         """
         Convert HTML or URL to image
         :param html_or_url: HTML string or URL
         :param size: Size of the browser window
         :return: list of image paths
         """
-        try:
-            filename = self._generate_filename(html_or_url, "png", absolute=False)
+        async with async_playwright() as p:
+            browser = await p.chromium.launch()
+            page = await browser.new_page()
+            
+            # Set page timeout
+            page.set_default_timeout(self._page_timeout)
+
+            if size is None:
+                size = self._browser_size
+            await page.set_viewport_size({"width": size[0], "height": size[1]})
 
             if html_or_url.startswith(("http://", "https://")):
-                return self._html.screenshot(url=html_or_url, save_as=filename, size=size)
+                await page.goto(html_or_url, wait_until="networkidle")
             else:
-                return self._html.screenshot(
-                    html_str=html_or_url,
-                    save_as=filename,
-                    css_str="body { background: white; }",
-                    size=size,
-                )
-        except Exception as e:
-            logging.warning(f"Error in html_to_image: {e}")
-            raise BusinessError("Failed to convert HTML to image")
+                await page.set_content(html_or_url, wait_until="networkidle")
+
+            filename = self._generate_filename(html_or_url, "png", absolute=True)
+            await page.screenshot(path=filename, full_page=True)
+
+            await browser.close()
+
+            return [filename]
 
     def generate_random_filename(self, ext: str) -> str:
         """
@@ -90,7 +109,11 @@ class BrowserServer:
         )
 
     def _generate_filename(
-        self, original_path: str, ext: str, index: int = 0, absolute: bool = False
+        self,
+        original_path: str,
+        ext: str,
+        index: int = 0,
+        absolute: bool = False,
     ) -> str:
         """
         Build local path for the resource
@@ -174,7 +197,9 @@ class BrowserServer:
         return text
 
     async def pdf_to_markdown(
-        self, pdf_path: str, maintain_format: bool = False
+        self,
+        pdf_path: str,
+        maintain_format: bool = False,
     ) -> MarkdownResult:
         result = await zerox(
             file_path=pdf_path,

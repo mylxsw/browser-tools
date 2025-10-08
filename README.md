@@ -117,6 +117,7 @@ Configure the service using environment variables in your `.env` file:
 | `BROWSER_TOOLS_DEBUG` | Enable debug mode | `false` |
 | `BROWSER_TOOLS_LOG_JSON_MODE` | Use JSON logging format | `true` |
 | `BROWSER_TOOLS_ZEROX_MODEL` | AI model for PDF conversion | `gpt-4o-mini` |
+| `BROWSER_TOOLS_PAGE_TIMEOUT` | Page navigation timeout in milliseconds | `60000` (60s) |
 | `OPENAI_API_KEY` | OpenAI API key (required for PDF to markdown) | - |
 | `OPENAI_BASE_URL` | OpenAI API endpoint | `https://api.openai.com/v1` |
 

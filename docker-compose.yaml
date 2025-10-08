@@ -4,7 +4,7 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "8000:8000"
+      - "8001:8000"
     environment:
       - CHROMIUM_FLAGS=--no-sandbox --disable-dev-shm-usage
       - BROWSER_TOOLS_CORS_ENABLED=${BROWSER_TOOLS_CORS_ENABLED:-true}
@@ -13,6 +13,7 @@ services:
       - BROWSER_TOOLS_LOG_JSON_MODE=${BROWSER_TOOLS_LOG_JSON_MODE:-true}
       - BROWSER_TOOLS_ZEROX_MODEL=${BROWSER_TOOLS_ZEROX_MODEL:-gpt-4o-mini}
       - BROWSER_TOOLS_TEMP_PATH=${BROWSER_TOOLS_TEMP_PATH:-/tmp/browser-tools}
+      - BROWSER_TOOLS_PAGE_TIMEOUT=${BROWSER_TOOLS_PAGE_TIMEOUT:-120000}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - OPENAI_BASE_URL=${OPENAI_BASE_URL:-https://api.openai.com/v1}
     volumes:

@@ -117,7 +117,7 @@ def route(server: BrowserServer) -> APIRouter:
         summary="Convert a HTML to an image",
         responses={200: {"model": ImageResponse}},
     )
-    def html_to_image(
+    async def html_to_image(
         html_or_url: Annotated[str, Form(description="The HTML content or URL")],
         size: Annotated[
             str | None,
@@ -127,7 +127,17 @@ def route(server: BrowserServer) -> APIRouter:
             ),
         ] = "1080x1920",
     ):
-        images = server.html_to_image(html_or_url=html_or_url, size=size.split("x"))
+        image_size = None
+        if size:
+            try:
+                width, height = map(int, size.split("x"))
+                image_size = (width, height)
+            except ValueError:
+                raise BusinessError("Invalid size format. Expected WIDTHxHEIGHT.")
+
+        images = await server.html_to_image(
+            html_or_url=html_or_url, size=image_size
+        )
         if len(images) == 0:
             raise BusinessError("No image generated")
 

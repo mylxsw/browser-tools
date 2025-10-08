@@ -206,6 +206,7 @@ async def global_exception_handler(request, exc: Exception):
 browser_server = BrowserServer(
     temp_path=os.path.join(infra.config.temp_path, "server"),
     zerox_model=infra.config.zerox_model,
+    page_timeout=infra.config.page_timeout,
 )
 routers = register_routes(browser_server)
 for router in routers:
